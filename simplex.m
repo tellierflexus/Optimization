@@ -1,4 +1,4 @@
-function simplex(A, b, C, Xbi)
+function [f_v, x, Xbi] = simplex(A, b, C, Xbi)
     format rat %To display fraction instead of decimal
     %Xbi = indices of basics variables
     % C is a column vector
@@ -16,7 +16,7 @@ function simplex(A, b, C, Xbi)
         disp(Smpx_tab);
         %Ok tricky part we gonna eliminate reduced cost corresponding to non
         %feasible solution
-        [~, Nbi] = find(B_1A((Xb==0),:)<0); % We first check for Basic variables equals to 0, then if the corresponding lign in basic direction is non negative
+        [~, Nbi] = find(B_1A((Xb==0),:)>0); % We first check for Basic variables equals to 0, then if the corresponding lign in basic direction is non negative (as the direction is minus the column we consider)
         Rc(Nbi) = Inf; %We set the reduced cost of non feasible direction to inf
         disp("Non feasible direction indices: " + Nbi); %Matlab display this only if Nbi is not empty, don't know why but its working
         [v, i] = min(Rc);
@@ -27,7 +27,10 @@ function simplex(A, b, C, Xbi)
         disp("Variable x" + i + " will enter the basis")
         alphas = Xb./B_1A(:,i); %We calculate the step following the direction to reach 0 for each basic variables
         alphas(alphas<0) = Inf;% We eliminate negative step (i.e the basics variables increase if we follow the direction)
-        [~, alpha_i] = min(alphas); %The variable which as the smaller step is choosen to exit the basis
+        [alpha_v, alpha_i] = min(alphas); %The variable which as the smaller step is choosen to exit the basis
+        if alpha_v == Inf
+            disp("No optimal solution")
+        end
         disp("Variable x" + Xbi(alpha_i) + " will leave the basis")
         Xbi(alpha_i) = i;
         step = step + 1;
@@ -37,7 +40,8 @@ function simplex(A, b, C, Xbi)
     x(Xbi) = Xb;
     disp("x : ");
     disp(x);
-    disp("Value of the function : " + -f_v);
+    f_v = -f_v;
+    disp("Value of the function : " + f_v);
     disp("Problem Solved")
 end
 
